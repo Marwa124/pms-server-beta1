@@ -49,7 +49,9 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.', 'namespace' => 'Admin', 'mi
 
 
     // Roles
-    // Route::delete('roles/destroy', 'RolesController@massDestroy')->name('roles.massDestroy');
+    Route::delete('roles/destroy', 'RolesController@massDestroy')->name('roles.massDestroy');
+    Route::resource('roles-management', 'RolesController');
+
     // Route::resource('roles', 'RolesController');
 
     // Users

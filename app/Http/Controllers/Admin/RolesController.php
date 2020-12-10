@@ -6,10 +6,10 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\MassDestroyRoleRequest;
 use App\Http\Requests\StoreRoleRequest;
 use App\Http\Requests\UpdateRoleRequest;
-use App\Models\Permission;
-use App\Models\Role;
 use Gate;
 use Illuminate\Http\Request;
+use Spatie\Permission\Models\Permission;
+use Spatie\Permission\Models\Role;
 use Symfony\Component\HttpFoundation\Response;
 
 class RolesController extends Controller
@@ -19,6 +19,7 @@ class RolesController extends Controller
         abort_if(Gate::denies('role_access'), Response::HTTP_FORBIDDEN, '403 Forbidden');
 
         $roles = Role::all();
+        //$roles = Role::all()->pluck('name')->toArray();
 
         return view('admin.roles.index', compact('roles'));
     }
@@ -40,21 +41,24 @@ class RolesController extends Controller
         return redirect()->route('admin.roles.index');
     }
 
-    public function edit(Role $role)
+    public function edit($id)
     {
         abort_if(Gate::denies('role_edit'), Response::HTTP_FORBIDDEN, '403 Forbidden');
-
-        $permissions = Permission::all()->pluck('title', 'id');
-
-        $role->load('permissions');
-
+        
+        // $permissions = Permission::all()->pluck('name', 'id');
+        $permissions = Permission::get()->groupBy('permission_group_id');
+        // dd($permissions);
+        $role = Role::find($id);
+        // $permissions = $role->getPermissionNames();
         return view('admin.roles.edit', compact('permissions', 'role'));
     }
 
     public function update(UpdateRoleRequest $request, Role $role)
     {
         $role->update($request->all());
-        $role->permissions()->sync($request->input('permissions', []));
+        $role->syncPermissions($request->permissions);
+
+        // $role->permissions()->sync($request->input('permissions', []));
 
         return redirect()->route('admin.roles.index');
     }
